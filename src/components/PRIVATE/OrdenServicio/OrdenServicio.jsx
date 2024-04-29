@@ -915,14 +915,14 @@ const OrdenServicio = ({
           <div className="c-title">
             <div className="info-t">
               <Logo className="ico-logo" />
-              <div className="title">
+              {/* <div className="title">
                 {Object.keys(InfoNegocio).length > 0 ? (
                   <h3>
                     {DiasAttencion(InfoNegocio?.horario.dias)} de &nbsp;
                     {HoraAttencion(InfoNegocio?.horario.horas)}
                   </h3>
                 ) : null}
-              </div>
+              </div> */}
             </div>
             <div className="n-recibo">
               <h2>RECIBO</h2>

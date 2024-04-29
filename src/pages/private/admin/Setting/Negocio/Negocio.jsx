@@ -231,7 +231,7 @@ const Negocio = () => {
               </div>
             </div>
           </div>
-          <div>
+          {/* <div>
             <h2>Horario de Atencion</h2>
             <table className="t-horario">
               <thead>
@@ -280,7 +280,7 @@ const Negocio = () => {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </div> */}
           <Button
             type="submit"
             variant="gradient"

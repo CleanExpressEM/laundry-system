@@ -3,8 +3,8 @@
 /* eslint-disable react/display-name */
 import React, { useEffect, useState } from "react";
 import {
-  DiasAttencion,
-  HoraAttencion,
+  // DiasAttencion,
+  // HoraAttencion,
   handleGetInfoPago,
   roundDecimal,
 } from "../../../../../../../utils/functions";
@@ -183,6 +183,10 @@ const Ticket = React.forwardRef((props, ref) => {
                   <tr>
                     <td>Horario:</td>
                     <td>
+                      Lunes a Viernes : 7 am - 9 pm
+                      <br />
+                      Sabado a Domingo : 8 am - 8 pm
+                      {/* 
                       {Object.keys(InfoNegocio).length > 0 ? (
                         <>
                           {DiasAttencion(InfoNegocio?.horario.dias)}
@@ -194,7 +198,7 @@ const Ticket = React.forwardRef((props, ref) => {
                           )}
                           {HoraAttencion(InfoNegocio?.horario.horas)}
                         </>
-                      ) : null}
+                      ) : null} */}
                     </td>
                   </tr>
                 </tbody>
