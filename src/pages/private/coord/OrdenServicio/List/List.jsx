@@ -133,7 +133,7 @@ const List = () => {
             readOnly
           />
         ),
-        size: 190,
+        size: 250,
       },
       {
         accessorKey: "PParcial",

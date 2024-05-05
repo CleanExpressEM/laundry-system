@@ -78,6 +78,7 @@ const OrdenServicio = ({
   const InfoCategorias = useSelector(
     (state) => state.categorias.listCategorias
   );
+  const InfoDelivery = useSelector((state) => state.servicios.serviceDelivery);
 
   const { InfoImpuesto, InfoPuntos } = useSelector(
     (state) => state.modificadores
@@ -104,16 +105,6 @@ const OrdenServicio = ({
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const getInfoDelivery = () => {
-    const ICategory = InfoCategorias.find((cat) => cat.nivel === "primario");
-    const IService = InfoServicios.find(
-      (service) =>
-        service.idCategoria === ICategory._id && service.nombre === "Delivery"
-    );
-
-    return IService;
-  };
-
   const validationSchema = Yup.object().shape({
     name: Yup.string().required("Campo obligatorio"),
     items: Yup.array()
@@ -122,9 +113,7 @@ const OrdenServicio = ({
         "categoria",
         "Debe haber al menos un item - Delivery no cuenta",
         function (value) {
-          return value.some(
-            (item) => item.identificador !== getInfoDelivery()?._id
-          );
+          return value.some((item) => item.identificador !== InfoDelivery?._id);
         }
       )
       .of(
@@ -140,7 +129,7 @@ const OrdenServicio = ({
     return Items.map((item) => {
       // Transforma cada item a la nueva estructura
       const isDelivery =
-        getInfoDelivery()?._id === item.identificador ? true : false;
+        InfoDelivery?._id === item.identificador ? true : false;
       return {
         cantidad: item.cantidad,
         identificador: item.identificador,
@@ -186,29 +175,30 @@ const OrdenServicio = ({
       pago: iEdit
         ? handleGetInfoPago(iEdit.ListPago, iEdit.totalNeto).estado
         : "Pendiente",
-      items: iEdit
-        ? getItemsAdaptados(iEdit.Items)
-        : mode === "Delivery"
-        ? [
-            {
-              identificador: getInfoDelivery()?._id,
-              tipo: "servicio",
-              cantidad: 1,
-              item: "Delivery",
-              simboloMedida: "vj",
-              descripcion: "Recojo y Entrega",
-              price: getInfoDelivery()?.precioVenta,
-              total: getInfoDelivery()?.precioVenta,
-              disable: {
-                cantidad: true,
-                item: true,
-                descripcion: true,
-                total: false,
-                action: true,
+      items:
+        iEdit && iEdit.estado === "registrado"
+          ? getItemsAdaptados(iEdit.Items)
+          : mode === "Delivery"
+          ? [
+              {
+                identificador: InfoDelivery?._id,
+                tipo: "servicio",
+                cantidad: 1,
+                item: "Delivery",
+                simboloMedida: "vj",
+                descripcion: "Recojo y Entrega",
+                price: InfoDelivery?.precioVenta,
+                total: InfoDelivery?.precioVenta,
+                disable: {
+                  cantidad: true,
+                  item: true,
+                  descripcion: true,
+                  total: false,
+                  action: false,
+                },
               },
-            },
-          ]
-        : [],
+            ]
+          : [],
       descuento: iEdit ? iEdit.descuento : 0,
       modoDescuento: iEdit ? iEdit.modoDescuento : "Puntos",
       factura: iEdit ? iEdit.factura : false,
@@ -288,6 +278,7 @@ const OrdenServicio = ({
   };
 
   const addRowGarment = (idServicio) => {
+    console.log("gaa");
     const IService = InfoServicios.find(
       (service) => service._id === idServicio
     );
@@ -325,7 +316,7 @@ const OrdenServicio = ({
         item: isEditSaved ? true : isDelivery ? true : isOtros ? false : true,
         descripcion: isDelivery,
         total: isEditSaved,
-        action: isDelivery,
+        action: isEditSaved ? true : isDelivery ? true : false,
       },
     };
 
@@ -1410,7 +1401,7 @@ const OrdenServicio = ({
                         if (
                           (!iEdit || iEdit?.estado === "reservado") &&
                           formik.values.items[index].identificador !==
-                            getInfoDelivery()?._id
+                            InfoDelivery?._id
                         ) {
                           const updatedItems = [...formik.values.items];
                           updatedItems.splice(index, 1);

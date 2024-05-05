@@ -118,7 +118,7 @@
       tr {
         position: relative;
         display: grid;
-        grid-template-columns: 80px 130px 200px 80px;
+        grid-template-columns: 80px auto 200px 80px;
       }
       thead {
         tr {

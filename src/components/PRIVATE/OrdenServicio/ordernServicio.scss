@@ -396,7 +396,7 @@
           tr {
             position: relative;
             display: grid;
-            grid-template-columns: 100px 170px 300px 100px 40px;
+            grid-template-columns: 100px 300px 300px 100px 40px;
           }
           thead {
             border: 1px solid #4671ea;
@@ -940,6 +940,10 @@
         }
       }
     }
+  }
+  .mantine-Select-dropdown {
+    width: max-content !important;
+    left: -60px !important;
   }
 }
 
