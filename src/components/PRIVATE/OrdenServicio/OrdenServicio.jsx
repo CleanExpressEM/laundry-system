@@ -278,7 +278,6 @@ const OrdenServicio = ({
   };
 
   const addRowGarment = (idServicio) => {
-    console.log("gaa");
     const IService = InfoServicios.find(
       (service) => service._id === idServicio
     );
