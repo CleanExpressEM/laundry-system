@@ -164,29 +164,30 @@ const Ticket = React.forwardRef((props, ref) => {
       {infoOrden ? (
         <div className="container-ticket" ref={ref}>
           <div className="body-orden-service">
-            <div className="receipt_header">
-              <div className="name-bussiness">
-                <Logo className="img-logo" />
-              </div>
-              <table className="info-table">
-                <tbody>
-                  <tr>
-                    <td>Direccion:</td>
-                    <td>{InfoNegocio?.direccion}</td>
-                  </tr>
-                  {InfoNegocio.numero.state ? (
+            {!tipoTicket ? (
+              <div className="receipt_header">
+                <div className="name-bussiness">
+                  <Logo className="img-logo" />
+                </div>
+                <table className="info-table">
+                  <tbody>
                     <tr>
-                      <td>Telefono:</td>
-                      <td>{InfoNegocio?.numero?.info}</td>
+                      <td>Direccion:</td>
+                      <td>{InfoNegocio?.direccion}</td>
                     </tr>
-                  ) : null}
-                  <tr>
-                    <td>Horario:</td>
-                    <td>
-                      Lunes a Viernes : 7 am - 9 pm
-                      <br />
-                      Sabado a Domingo : 8 am - 8 pm
-                      {/* 
+                    {InfoNegocio.numero.state ? (
+                      <tr>
+                        <td>Telefono:</td>
+                        <td>{InfoNegocio?.numero?.info}</td>
+                      </tr>
+                    ) : null}
+                    <tr>
+                      <td>Horario:</td>
+                      <td>
+                        Lunes a Viernes : 7 am - 9 pm
+                        <br />
+                        Sabado a Domingo : 8 am - 8 pm
+                        {/* 
                       {Object.keys(InfoNegocio).length > 0 ? (
                         <>
                           {DiasAttencion(InfoNegocio?.horario.dias)}
@@ -199,11 +200,12 @@ const Ticket = React.forwardRef((props, ref) => {
                           {HoraAttencion(InfoNegocio?.horario.horas)}
                         </>
                       ) : null} */}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
             <div className="info-client">
               <div className="cod-rec">
                 <p className="l-text">
