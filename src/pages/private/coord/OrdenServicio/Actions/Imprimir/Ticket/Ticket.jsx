@@ -350,11 +350,7 @@ const Ticket = React.forwardRef((props, ref) => {
                       <th></th>
                       <th>Item</th>
                       <th>Cantidad</th>
-                      {!tipoTicket ? (
-                        <>
-                          <th>Total</th>
-                        </>
-                      ) : null}
+                      <th>Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -366,77 +362,69 @@ const Ticket = React.forwardRef((props, ref) => {
                           <td>•</td>
                           <td>{p.item}</td>
                           <td>{formatThousandsSeparator(p.cantidad)}</td>
-                          {!tipoTicket ? (
-                            <>
-                              <td>{formatThousandsSeparator(p.total)}</td>
-                            </>
-                          ) : null}
+                          <td>{formatThousandsSeparator(p.total)}</td>
                         </tr>
                         {showDescripcion && p.descripcion ? (
                           <tr className="fila_descripcion">
-                            <td colSpan={!tipoTicket ? 4 : 3}>
-                              {spaceLine(p.descripcion)}
-                            </td>
+                            <td colSpan={4}>{spaceLine(p.descripcion)}</td>
                           </tr>
                         ) : null}
                       </React.Fragment>
                     ))}
                   </tbody>
-                  {!tipoTicket ? (
-                    <tfoot>
+                  <tfoot>
+                    <tr>
+                      <td colSpan="3">Subtotal :</td>
+                      <td>
+                        {formatThousandsSeparator(
+                          infoOrden.subTotal -
+                            (infoOrden?.Modalidad === "Delivery"
+                              ? montoDelivery()
+                              : 0)
+                        )}
+                      </td>
+                    </tr>
+                    {infoOrden?.Modalidad === "Delivery" ? (
                       <tr>
-                        <td colSpan="3">Subtotal :</td>
-                        <td>
-                          {formatThousandsSeparator(
-                            infoOrden.subTotal -
-                              (infoOrden?.Modalidad === "Delivery"
-                                ? montoDelivery()
-                                : 0)
-                          )}
-                        </td>
+                        <td colSpan="3">Delivery :</td>
+                        <td>{montoDelivery()}</td>
                       </tr>
-                      {infoOrden?.Modalidad === "Delivery" ? (
-                        <tr>
-                          <td colSpan="3">Delivery :</td>
-                          <td>{montoDelivery()}</td>
-                        </tr>
-                      ) : null}
+                    ) : null}
 
-                      {infoOrden.factura ? (
-                        <tr>
-                          <td colSpan="3">
-                            {nameImpuesto} (
-                            {infoOrden.cargosExtras.igv.valor * 100} %) :
-                          </td>
-                          <td>{infoOrden.cargosExtras.igv.importe}</td>
-                        </tr>
-                      ) : null}
+                    {infoOrden.factura ? (
                       <tr>
-                        <td colSpan="3">Descuento :</td>
-                        <td>
-                          {infoOrden.descuento
-                            ? formatThousandsSeparator(infoOrden.descuento)
-                            : 0}
+                        <td colSpan="3">
+                          {nameImpuesto} (
+                          {infoOrden.cargosExtras.igv.valor * 100} %) :
                         </td>
+                        <td>{infoOrden.cargosExtras.igv.importe}</td>
                       </tr>
-                      <tr>
-                        <td colSpan="3">Total a Pagar :</td>
-                        <td>{formatThousandsSeparator(infoOrden.totalNeto)}</td>
-                      </tr>
-                      {sPago?.estado === "Incompleto" ? (
-                        <>
-                          <tr>
-                            <td colSpan="3">A Cuenta :</td>
-                            <td>{formatThousandsSeparator(sPago?.pago)}</td>
-                          </tr>
-                          <tr>
-                            <td colSpan="3">Deuda Pendiente :</td>
-                            <td>{formatThousandsSeparator(sPago?.falta)}</td>
-                          </tr>
-                        </>
-                      ) : null}
-                    </tfoot>
-                  ) : null}
+                    ) : null}
+                    <tr>
+                      <td colSpan="3">Descuento :</td>
+                      <td>
+                        {infoOrden.descuento
+                          ? formatThousandsSeparator(infoOrden.descuento)
+                          : 0}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan="3">Total a Pagar :</td>
+                      <td>{formatThousandsSeparator(infoOrden.totalNeto)}</td>
+                    </tr>
+                    {sPago?.estado === "Incompleto" ? (
+                      <>
+                        <tr>
+                          <td colSpan="3">A Cuenta :</td>
+                          <td>{formatThousandsSeparator(sPago?.pago)}</td>
+                        </tr>
+                        <tr>
+                          <td colSpan="3">Deuda Pendiente :</td>
+                          <td>{formatThousandsSeparator(sPago?.falta)}</td>
+                        </tr>
+                      </>
+                    ) : null}
+                  </tfoot>
                 </table>
                 {infoOrden?.descuento > 0 && !tipoTicket ? (
                   <div className="space-ahorro">
