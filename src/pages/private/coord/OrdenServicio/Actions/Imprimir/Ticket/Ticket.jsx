@@ -350,7 +350,11 @@ const Ticket = React.forwardRef((props, ref) => {
                       <th></th>
                       <th>Item</th>
                       <th>Cantidad</th>
-                      <th>Total</th>
+                      {!tipoTicket ? (
+                        <>
+                          <th>Total</th>
+                        </>
+                      ) : null}
                     </tr>
                   </thead>
                   <tbody>
@@ -362,70 +366,84 @@ const Ticket = React.forwardRef((props, ref) => {
                           <td>•</td>
                           <td>{p.item}</td>
                           <td>{formatThousandsSeparator(p.cantidad)}</td>
-                          <td>{formatThousandsSeparator(p.total)}</td>
+                          {!tipoTicket ? (
+                            <>
+                              <td>{formatThousandsSeparator(p.total)}</td>
+                            </>
+                          ) : null}
                         </tr>
                         {showDescripcion && p.descripcion ? (
                           <tr className="fila_descripcion">
-                            <td colSpan={4}>{spaceLine(p.descripcion)}</td>
+                            <td colSpan={!tipoTicket ? 4 : 3}>
+                              {spaceLine(p.descripcion)}
+                            </td>
                           </tr>
                         ) : null}
                       </React.Fragment>
                     ))}
                   </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colSpan="3">Subtotal :</td>
-                      <td>
-                        {formatThousandsSeparator(
-                          infoOrden.subTotal -
-                            (infoOrden?.Modalidad === "Delivery"
-                              ? montoDelivery()
-                              : 0)
-                        )}
-                      </td>
-                    </tr>
-                    {infoOrden?.Modalidad === "Delivery" ? (
+                  {!tipoTicket ? (
+                    <tfoot>
                       <tr>
-                        <td colSpan="3">Delivery :</td>
-                        <td>{montoDelivery()}</td>
-                      </tr>
-                    ) : null}
-
-                    {infoOrden.factura ? (
-                      <tr>
-                        <td colSpan="3">
-                          {nameImpuesto} (
-                          {infoOrden.cargosExtras.igv.valor * 100} %) :
+                        <td colSpan="3">Subtotal :</td>
+                        <td>
+                          {formatThousandsSeparator(
+                            infoOrden.subTotal -
+                              (infoOrden?.Modalidad === "Delivery"
+                                ? montoDelivery()
+                                : 0)
+                          )}
                         </td>
-                        <td>{infoOrden.cargosExtras.igv.importe}</td>
                       </tr>
-                    ) : null}
-                    <tr>
-                      <td colSpan="3">Descuento :</td>
-                      <td>
-                        {infoOrden.descuento
-                          ? formatThousandsSeparator(infoOrden.descuento)
-                          : 0}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td colSpan="3">Total a Pagar :</td>
-                      <td>{formatThousandsSeparator(infoOrden.totalNeto)}</td>
-                    </tr>
-                    {sPago?.estado === "Incompleto" ? (
-                      <>
+                      {infoOrden?.Modalidad === "Delivery" ? (
                         <tr>
-                          <td colSpan="3">A Cuenta :</td>
-                          <td>{formatThousandsSeparator(sPago?.pago)}</td>
+                          <td colSpan="3">Delivery :</td>
+                          <td>{montoDelivery()}</td>
                         </tr>
+                      ) : null}
+
+                      {infoOrden.factura ? (
                         <tr>
-                          <td colSpan="3">Deuda Pendiente :</td>
-                          <td>{formatThousandsSeparator(sPago?.falta)}</td>
+                          <td colSpan="3">
+                            {nameImpuesto} (
+                            {infoOrden.cargosExtras.igv.valor * 100} %) :
+                          </td>
+                          <td>{infoOrden.cargosExtras.igv.importe}</td>
                         </tr>
-                      </>
-                    ) : null}
-                  </tfoot>
+                      ) : null}
+                      <tr>
+                        <td colSpan="3">Descuento :</td>
+                        <td>
+                          {infoOrden.descuento
+                            ? formatThousandsSeparator(infoOrden.descuento)
+                            : 0}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colSpan="3">Total a Pagar :</td>
+                        <td>{formatThousandsSeparator(infoOrden.totalNeto)}</td>
+                      </tr>
+                      {sPago?.estado === "Incompleto" ? (
+                        <>
+                          <tr>
+                            <td colSpan="3">A Cuenta :</td>
+                            <td>{formatThousandsSeparator(sPago?.pago)}</td>
+                          </tr>
+                          <tr>
+                            <td colSpan="3">Deuda Pendiente :</td>
+                            <td>{formatThousandsSeparator(sPago?.falta)}</td>
+                          </tr>
+                        </>
+                      ) : null}
+                    </tfoot>
+                  ) : null}
                 </table>
+                {tipoTicket ? (
+                  <div className="deuda">
+                    Deuda Pendiente :{" "}
+                    {formatThousandsSeparator(sPago?.falta, true)}
+                  </div>
+                ) : null}
                 {infoOrden?.descuento > 0 && !tipoTicket ? (
                   <div className="space-ahorro">
                     <h2 className="title">
