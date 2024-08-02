@@ -504,6 +504,12 @@ const Ticket = React.forwardRef((props, ref) => {
                     </tfoot>
                   ) : null}
                 </table>
+                {tipoTicket ? (
+                  <div className="deuda">
+                    Deuda Pendiente :{" "}
+                    {formatThousandsSeparator(sPago?.falta, true)}
+                  </div>
+                ) : null}
                 {infoOrden?.descuento.estado &&
                 infoOrden?.descuento.info &&
                 infoOrden?.descuento.modoDescuento !== "Ninguno" &&
