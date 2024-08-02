@@ -29,7 +29,7 @@ const InfoEntrega = ({ mode, paso, descripcion, changeValue, values }) => {
                 changeValue("datePrevista", date);
               }}
               placeholder="Ingrese Fecha"
-              minDate={new Date()}
+              minDate={values.dateRecojo}
               disabled={mode === "UPDATE"}
             />
             <div className="actions-date">
@@ -37,7 +37,7 @@ const InfoEntrega = ({ mode, paso, descripcion, changeValue, values }) => {
                 type="button"
                 className="btn-preview"
                 onClick={() => {
-                  const currentDate = new Date();
+                  const currentDate = values.dateRecojo;
                   const newDate = new Date(
                     Math.max(
                       values.datePrevista.getTime() - 24 * 60 * 60 * 1000,
@@ -73,15 +73,16 @@ const InfoEntrega = ({ mode, paso, descripcion, changeValue, values }) => {
           <label htmlFor=""></label>
           <div className="date-dh">
             <TimePicker
+              name="hourPrevista"
               className="hour-date"
               onChange={(newTime) => {
                 const timeMoment = moment(newTime, "HH:mm");
                 const timeString = timeMoment.format("HH:mm");
-                changeValue("dayhour", timeString);
+                changeValue("hourPrevista", timeString);
               }}
               value={
-                moment(values.dayhour, "HH:mm").isValid()
-                  ? moment(values.dayhour, "HH:mm").toDate()
+                moment(values.hourPrevista, "HH:mm").isValid()
+                  ? moment(values.hourPrevista, "HH:mm").toDate()
                   : null
               }
               disabled={mode === "UPDATE"}

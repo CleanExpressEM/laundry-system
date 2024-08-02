@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import { createSlice } from "@reduxjs/toolkit";
 import {
   AddOrdenServices,
@@ -5,25 +6,48 @@ import {
   Anular_OrdenService,
   CancelEntrega_OrdenService,
   Entregar_OrdenService,
+  FinalzarRegistroPreliminar,
   FinalzarReservaOrdenService,
+  GetOrdenServices_Date,
   GetOrdenServices_DateRange,
+  GetOrdenServices_Last,
+  GetOrdenServices_Preliminar,
   Nota_OrdenService,
   UpdateDetalleOrdenServices,
+  UpdateOrdenServices,
 } from "../actions/aOrdenServices";
 import { handleGetInfoPago } from "../../utils/functions";
+import moment from "moment";
 
 const service_order = createSlice({
   name: "service_order",
   initialState: {
     infoServiceOrder: false,
     registered: [],
+    preliminary: [],
     reserved: [],
     lastRegister: null,
     orderServiceId: false,
+    // filtros
+    filterBy: "pendiente",
+    searhOptionByOthers: "date",
+    selectedMonth: moment().toDate(),
+    // ----------------- //
     isLoading: false,
     error: null,
   },
   reducers: {
+    // Filtros
+    setFilterBy: (state, action) => {
+      state.filterBy = action.payload;
+    },
+    setSearchOptionByOthers: (state, action) => {
+      state.searhOptionByOthers = action.payload;
+    },
+    setSelectedMonth: (state, action) => {
+      state.selectedMonth = action.payload;
+    },
+    // ----------------------------------------- //
     updateLastRegister: (state, action) => {
       state.lastRegister = {
         ...state.lastRegister,
@@ -83,13 +107,22 @@ const service_order = createSlice({
       }
     },
     updateAnulacionOrden: (state, action) => {
-      const index = state.registered.findIndex(
+      const indexOnRegistered = state.registered.findIndex(
         (item) => item._id === action.payload._id
       );
 
-      if (index !== -1) {
-        const updatedOrder = state.registered[index];
+      if (indexOnRegistered !== -1) {
+        const updatedOrder = state.registered[indexOnRegistered];
         updatedOrder.estadoPrenda = action.payload.estadoPrenda;
+      } else {
+        const indexOnPreliminar = state.preliminary.findIndex(
+          (item) => item._id === action.payload._id
+        );
+
+        if (indexOnPreliminar !== -1) {
+          // Actualiza directamente el array usando splice
+          state.preliminary.splice(indexOnPreliminar, 1);
+        }
       }
     },
     updateNotaOrden: (state, action) => {
@@ -102,30 +135,83 @@ const service_order = createSlice({
         updatedOrder.notas = action.payload.notas;
       }
     },
-    // ---------------------- //
-    LS_updateListOrder: (state, action) => {
-      const listOrderUpdated = action.payload;
-      listOrderUpdated.map((order) => {
-        // Busca si existe un elemento con el mismo _id en state.registered
-        const eRegistered = state.registered.findIndex(
-          (item) => item._id === order._id
+    updateLocationOrden: (state, action) => {
+      action.payload.map((orden) => {
+        const index = state.registered.findIndex(
+          (item) => item._id === orden._id
         );
-        if (eRegistered !== -1) {
-          // Si existe, actualiza las propiedades existentes en action.payload en el elemento correspondiente
-          Object.assign(state.registered[eRegistered], order);
+
+        if (index !== -1) {
+          const updatedOrder = state.registered[index];
+          updatedOrder.location = orden.location;
+          updatedOrder.estadoPrenda = orden.estadoPrenda;
         }
       });
     },
-    LS_newOrder: (state, action) => {
-      if (action.payload.estado === "reservado") {
-        state.reserved.push(action.payload);
-      }
+    updateFinishRegistroPreliminar: (state, action) => {
+      const { _id, dateRecepcion, estado } = action.payload;
 
-      if (action.payload.estado === "registrado") {
-        state.registered.push(action.payload);
+      const infoPreliminar = state.preliminary.find((item) => item._id === _id);
+
+      infoPreliminar.dateRecepcion = dateRecepcion;
+      infoPreliminar.estado = estado;
+
+      state.registered.push(infoPreliminar);
+
+      // ELIMINAR ORDEN DE RECOJO DE PRELIMINAR
+
+      const indexOnPreliminar = state.preliminary.findIndex(
+        (item) => item._id === action.payload._id
+      );
+
+      if (indexOnPreliminar !== -1) {
+        // Actualiza directamente el array usando splice
+        state.preliminary.splice(indexOnPreliminar, 1);
       }
     },
-    LS_changeListPago: (state, action) => {
+    // ---------------------- //
+    changeOrder: (state, action) => {
+      const { tipo, info } = action.payload;
+      const stateMap = {
+        reservado: state.reserved,
+        registrado: state.registered,
+        preliminar: state.preliminary,
+      };
+
+      const stateArray = stateMap[info.estado];
+      if (!stateArray) {
+        console.log("Estado no reconocido:", info.estado);
+        return;
+      }
+
+      const findIndexById = (arr, id) =>
+        arr.findIndex((item) => item._id === id);
+
+      switch (tipo) {
+        case "add":
+          stateArray.push(info);
+          break;
+        case "update":
+          const updateIndex = findIndexById(stateArray, info._id);
+          if (updateIndex !== -1) {
+            stateArray[updateIndex] = info;
+          } else {
+            console.log("Orden no encontrada para actualizar:", info._id);
+          }
+          break;
+        case "delete":
+          const deleteIndex = findIndexById(stateArray, info._id);
+          if (deleteIndex !== -1) {
+            stateArray.splice(deleteIndex, 1);
+          } else {
+            console.log("Orden no encontrada para eliminar:", info._id);
+          }
+          break;
+        default:
+          console.log("Acción no reconocida:", tipo);
+      }
+    },
+    LS_changePagoOnOrden: (state, action) => {
       const { tipo, info } = action.payload;
 
       // Buscar la orden por su _id
@@ -179,54 +265,6 @@ const service_order = createSlice({
       // Actualizar la orden en state.registered
       state.registered[orderToUpdateIndex] = orderToUpdate;
     },
-    LS_changePagoOnOrden: (state, action) => {
-      const { tipo, info } = action.payload;
-
-      // Encontrar la orden por su _id
-      const orderIndex = state.registered.findIndex(
-        (order) => order._id === info.idOrden
-      );
-
-      // Verificar si la orden existe
-      if (orderIndex === -1) {
-        console.error("Orden no encontrada:", info.idOrden);
-        return;
-      }
-
-      const order = state.registered[orderIndex];
-      let updatedPagoIndex, existingPagoIndex; // Declaraciones fuera del switch
-
-      // Realizar la acción según el tipo
-      switch (tipo) {
-        case "deleted":
-          // Eliminar el pago del array ListPago
-          order.listPago.splice(order.listPago.indexOf(info._id), 1);
-          break;
-        case "updated":
-          // Buscar el pago por su _id y actualizarlo con la nueva información
-          updatedPagoIndex = order.listPago.findIndex(
-            (pagoId) => pagoId === info._id
-          );
-          if (updatedPagoIndex !== -1) {
-            order.listPago[updatedPagoIndex] = info._id;
-          } else {
-            console.error("Pago no encontrado para actualizar:", info._id);
-          }
-          break;
-        case "added":
-          // Verificar si el pago ya existe en ListPago
-          existingPagoIndex = order.listPago.indexOf(info._id);
-          if (existingPagoIndex === -1) {
-            // Agregar el nuevo pago a ListPago solo si no existe
-            order.listPago.push(info._id);
-          } else {
-            console.error("El pago ya existe en ListPago:", info._id);
-          }
-          break;
-        default:
-          console.error("Tipo de acción no válido:", tipo);
-      }
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -244,6 +282,10 @@ const service_order = createSlice({
 
         if (action.payload.estado === "registrado") {
           state.registered.push(action.payload);
+        }
+
+        if (action.payload.estado === "preliminar") {
+          state.preliminary.push(action.payload);
         }
 
         state.lastRegister = action.payload;
@@ -264,6 +306,22 @@ const service_order = createSlice({
         state.registered[index].Items = action.payload.Items;
       })
       .addCase(UpdateDetalleOrdenServices.rejected, (state) => {
+        state.isLoading = false;
+      })
+      // Update Orden Completo - PRELIMINAR
+      .addCase(UpdateOrdenServices.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(UpdateOrdenServices.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const index = state.preliminary.findIndex(
+          (item) => item._id === action.payload._id
+        );
+
+        state.preliminary[index] = action.payload;
+      })
+      .addCase(UpdateOrdenServices.rejected, (state) => {
         state.isLoading = false;
       })
       // Finalizar Reserva
@@ -333,13 +391,22 @@ const service_order = createSlice({
       })
       .addCase(Anular_OrdenService.fulfilled, (state, action) => {
         state.isLoading = false;
-        const index = state.registered.findIndex(
+        const indexOnRegistered = state.registered.findIndex(
           (item) => item._id === action.payload._id
         );
 
-        if (index !== -1) {
-          const updatedOrder = state.registered[index];
+        if (indexOnRegistered !== -1) {
+          const updatedOrder = state.registered[indexOnRegistered];
           updatedOrder.estadoPrenda = action.payload.estadoPrenda;
+        } else {
+          const indexOnPreliminar = state.preliminary.findIndex(
+            (item) => item._id === action.payload._id
+          );
+
+          if (indexOnPreliminar !== -1) {
+            // Actualiza directamente el array usando splice
+            state.preliminary.splice(indexOnPreliminar, 1);
+          }
         }
       })
       .addCase(Anular_OrdenService.rejected, (state, action) => {
@@ -365,6 +432,42 @@ const service_order = createSlice({
         }
       })
       .addCase(Nota_OrdenService.rejected, (state, action) => {
+        state.isLoading = false;
+        state.infoServiceOrder = false;
+        state.error = action.error.message;
+      })
+      // Finalizar Registro Preliminar
+      .addCase(FinalzarRegistroPreliminar.pending, (state) => {
+        state.isLoading = true;
+        state.infoServiceOrder = false;
+        state.error = null;
+      })
+      .addCase(FinalzarRegistroPreliminar.fulfilled, (state, action) => {
+        state.isLoading = false;
+
+        const { _id, dateRecepcion, estado } = action.payload;
+
+        const infoPreliminar = state.preliminary.find(
+          (item) => item._id === _id
+        );
+
+        infoPreliminar.dateRecepcion = dateRecepcion;
+        infoPreliminar.estado = estado;
+
+        state.registered.push(infoPreliminar);
+
+        // ELIMINAR ORDEN DE RECOJO DE PRELIMINAR
+
+        const indexOnPreliminar = state.preliminary.findIndex(
+          (item) => item._id === action.payload._id
+        );
+
+        if (indexOnPreliminar !== -1) {
+          // Actualiza directamente el array usando splice
+          state.preliminary.splice(indexOnPreliminar, 1);
+        }
+      })
+      .addCase(FinalzarRegistroPreliminar.rejected, (state, action) => {
         state.isLoading = false;
         state.infoServiceOrder = false;
         state.error = action.error.message;
@@ -416,6 +519,64 @@ const service_order = createSlice({
         state.isLoading = false;
         state.infoServiceOrder = false;
         state.error = action.error.message;
+      })
+      // List Last
+      .addCase(GetOrdenServices_Last.pending, (state) => {
+        state.isLoading = true;
+        state.infoServiceOrder = false;
+        state.error = null;
+      })
+      .addCase(GetOrdenServices_Last.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.infoServiceOrder = action.payload.length > 0;
+        state.reserved = action.payload.filter(
+          (item) => item.estado === "reservado"
+        );
+        state.registered = action.payload.filter(
+          (item) => item.estado === "registrado"
+        );
+      })
+      .addCase(GetOrdenServices_Last.rejected, (state, action) => {
+        state.isLoading = false;
+        state.infoServiceOrder = false;
+        state.error = action.error.message;
+      })
+      // List Preliminar
+      .addCase(GetOrdenServices_Preliminar.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(GetOrdenServices_Preliminar.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.preliminary = action.payload;
+      })
+      .addCase(GetOrdenServices_Preliminar.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
+      })
+      // List for Date
+      .addCase(GetOrdenServices_Date.pending, (state) => {
+        state.isLoading = true;
+        state.infoServiceOrder = false;
+        state.error = null;
+      })
+      .addCase(GetOrdenServices_Date.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.infoServiceOrder = action.payload.length > 0;
+        state.reserved = action.payload.filter(
+          (item) => item.estado === "reservado"
+        );
+        state.registered = action.payload.filter(
+          (item) => item.estado === "registrado"
+        );
+        state.preliminary = action.payload.filter(
+          (item) => item.estado === "preliminar"
+        );
+      })
+      .addCase(GetOrdenServices_Date.rejected, (state, action) => {
+        state.isLoading = false;
+        state.infoServiceOrder = false;
+        state.error = action.error.message;
       });
   },
 });
@@ -423,15 +584,19 @@ const service_order = createSlice({
 export const {
   setLastRegister,
   updateNotaOrden,
+  updateLocationOrden,
   updateDetalleOrden,
   updateFinishReserva,
   updateEntregaOrden,
   updateCancelarEntregaOrden,
   updateAnulacionOrden,
+  updateFinishRegistroPreliminar,
   updateLastRegister,
-  LS_newOrder,
-  LS_updateListOrder,
-  LS_changeListPago,
+  changeOrder,
   LS_changePagoOnOrden,
+  // Filter
+  setFilterBy,
+  setSearchOptionByOthers,
+  setSelectedMonth,
 } = service_order.actions;
 export default service_order.reducer;

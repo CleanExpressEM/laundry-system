@@ -24,6 +24,10 @@ import { RoleGuard } from "../Guard/index";
 import RoutesWithNotFound from "../NotFound/RoutesWithNotFound";
 import CuadreCaja from "../../pages/private/coord/CuadreCaja/CuadreCaja";
 import AddOld from "../../pages/private/admin/OrdenServicio/AddOld/AddOld";
+
+import Preliminar from "../../pages/private/coord/OrdenServicio/Preliminar/Preliminar";
+import { default as EditOrdenRecojo_Preliminar } from "../../pages/private/coord/OrdenServicio/Preliminar/Edit/Edit";
+
 // import Graficos from '../../pages/private/admin/Graficos/Graficos';
 import Promociones from "../../pages/private/admin/Promociones/Promociones";
 
@@ -48,7 +52,6 @@ import STipoGastos from "../../pages/private/admin/Setting/TipoGastos/TipoGastos
 import SCategorias from "../../pages/private/admin/Setting/Categorias/Categorias";
 import Personal from "../../pages/private/coord/Personal/Personal";
 import Asistencia from "../../pages/private/coord/Personal/Asistencia/Asistencia";
-import NewDesignList from "../../pages/private/coord/OrdenServicio/List/NewDesignList";
 import Clientes from "../../pages/private/admin/Clientes/Clientes";
 
 const Private = () => {
@@ -63,7 +66,6 @@ const Private = () => {
         <Route
           path={PrivateRoutes.LIST_ORDER_SERVICE}
           element={<ListOrdenService />}
-          // element={<NewDesignList />}
         />
         {/* PAGES ADMINISTRADOR O PAGES GERENTE */}
         <Route element={<RoleGuard rol={Roles.GERENTE} />}>
@@ -147,6 +149,15 @@ const Private = () => {
             element={<ReporteMesual />}
           />
           <Route path={PrivateRoutes.CUADRE_CAJA} element={<CuadreCaja />} />
+          {/* --------------- PRELIMINAR --------------- */}
+          <Route
+            path={PrivateRoutes.REGISTER_PRELIMINAR}
+            element={<Preliminar />}
+          />
+          <Route
+            path={`${PrivateRoutes.EDIT_ORDER_RECOJO}/:id`}
+            element={<EditOrdenRecojo_Preliminar />}
+          />
         </Route>
       </RoutesWithNotFound>
     </PrivateMainLayout>
