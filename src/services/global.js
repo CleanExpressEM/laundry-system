@@ -27,7 +27,7 @@ export const allowedRoles = [
 // Factura
 export const showFactura = false;
 // Mostrar Cuantos Puntos tiene el Cliente
-export const showPuntosOnTicket = true;
+export const showPuntosOnTicket = false;
 // Tipo de Moneda
 export const tipoMoneda = "PEN";
 // Formato de la moneda (separacion de miles - decimales) segun la configuracion regional
